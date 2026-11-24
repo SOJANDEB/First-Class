@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bug Squash</title>
+<style>
+  body{margin:0;background:#2b2a24;color:#fff;font-family:system-ui,sans-serif;text-align:center;user-select:none;overflow:hidden}
+  #hud{padding:10px;font-size:20px;display:flex;justify-content:space-around}
+  #field{position:relative;width:100vw;height:calc(100vh - 50px);background:#3d5a2e;cursor:crosshair;overflow:hidden}
+  .bug{position:absolute;font-size:40px;cursor:pointer;transition:transform .1s}
+  #msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.65);font-size:28px;gap:16px;z-index:5}
+  button{font-size:20px;padding:10px 26px;border:0;border-radius:10px;background:#7bd389;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="hud">
+  <span>Score: <b id="score">0</b></span>
+  <span>Time: <b id="time">30</b></span>
+  <span>Best: <b id="best">0</b></span>
+</div>
+<div id="field">
+  <div id="msg"><div>🐛 Bug Squash 🐜<br><small>Click the bugs before they escape!</small></div><button id="go">Start</button></div>
+</div>
+<script>
+const field=document.getElementById('field'),msg=document.getElementById('msg'),go=document.getElementById('go');
+const scoreEl=document.getElementById('score'),timeEl=document.getElementById('time'),bestEl=document.getElementById('best');
+const types=[{e:'🐛',pts:1,speed:1.5},{e:'🐜',pts:2,speed:2.5},{e:'🪲',pts:3,speed:3.5},{e:'🦟',pts:5,speed:5}];
+let score=0,time=30,best=0,bugs=[],running=false,spawnT,clockT,frameId;
+
+function spawn(){
+  if(!running)return;
+  const t=types[Math.random()<0.5?0:Math.floor(Math.random()*types.length)];
+  const el=document.createElement('div');
+  el.className='bug';el.textContent=t.e;
+  const fromLeft=Math.random()<0.5;
+  const b={el,x:fromLeft?-50:field.clientWidth+10,y:Math.random()*(field.clientHeight-60),
+           vx:(fromLeft?1:-1)*t.speed,vy:(Math.random()-0.5)*2,pts:t.pts};
+  el.onpointerdown=e=>{
+    e.stopPropagation();
+    score+=b.pts;scoreEl.textContent=score;
+    el.textContent='💥';b.dead=true;
+    setTimeout(()=>el.remove(),150);
+  };
+  field.appendChild(el);bugs.push(b);
+  spawnT=setTimeout(spawn,Math.max(250,800-score*8));
+}
+
+function loop(){
+  bugs.forEach(b=>{
+    if(b.dead)return;
+    b.x+=b.vx;b.y+=b.vy;
+    if(Math.random()<0.03)b.vy=(Math.random()-0.5)*3;
+    if(b.y<0||b.y>field.clientHeight-50)b.vy*=-1;
+    b.el.style.transform=`translate(${b.x}px,${b.y}px) scaleX(${b.vx>0?-1:1})`;
+    b.el.style.left=0;b.el.style.top=0;
+    if(b.x<-80||b.x>field.clientWidth+80){b.dead=true;b.el.remove()}
+  });
+  bugs=bugs.filter(b=>!b.dead);
+  if(running)frameId=requestAnimationFrame(loop);
+}
+
+function start(){
+  bugs.forEach(b=>b.el.remove());bugs=[];
+  score=0;time=30;running=true;
+  scoreEl.textContent=0;timeEl.textContent=30;
+  msg.style.display='none';
+  spawn();loop();
+  clockT=setInterval(()=>{
+    time--;timeEl.textContent=time;
+    if(time<=0)end();
+  },1000);
+}
+
+function end(){
+  running=false;
+  clearInterval(clockT);clearTimeout(spawnT);cancelAnimationFrame(frameId);
+  if(score>best){best=score;bestEl.textContent=best}
+  msg.style.display='flex';
+  msg.firstElementChild.innerHTML=`Time's up!<br>You squashed <b>${score}</b> points of bugs 🪲`;
+  go.textContent='Play again';
+}
+
+go.onclick=start;
+</script>
+</body>
+</html>

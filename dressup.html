@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dress Up Studio</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Trebuchet MS",system-ui,sans-serif;background:linear-gradient(160deg,#ffe3ef,#e6e0ff);color:#4a3a55;display:flex;flex-direction:column;align-items:center;padding:14px;min-height:100vh;user-select:none}
+  h1{margin:2px 0 6px;font-size:26px}
+  #theme{background:#fff;padding:8px 20px;border-radius:22px;font-size:17px;margin-bottom:12px;box-shadow:0 3px 10px rgba(120,80,150,.15)}
+  #app{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;width:100%;max-width:880px}
+  #stageWrap{width:min(92vw,320px)}
+  #stage{width:100%;display:block;border-radius:20px;box-shadow:0 6px 18px rgba(120,80,150,.25);touch-action:none}
+  #side{flex:1;min-width:280px;max-width:440px}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .tabs button{padding:7px 13px;border:0;border-radius:18px;background:#fff;color:#4a3a55;cursor:pointer;font-size:14px}
+  .tabs button.on{background:#ff7eb0;color:#fff}
+  #wardrobe{background:#fff;border-radius:16px;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;max-height:300px;overflow:auto;box-shadow:0 3px 10px rgba(120,80,150,.12)}
+  .item{height:78px;background:#fff6fa;border:2px solid #ffd6e6;border-radius:12px;cursor:grab;touch-action:none;padding:2px}
+  .item:hover{border-color:#ff7eb0}
+  .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .btn{padding:10px 18px;border:0;border-radius:14px;background:#8b6cf0;color:#fff;cursor:pointer;font-size:15px}
+  .btn.pink{background:#ff7eb0}.btn.grey{background:#b9aac9}
+  #key{width:100%;padding:8px;margin-top:10px;border:1px solid #d9c9e8;border-radius:10px;font-size:13px}
+  #hint{min-height:20px;font-size:13px;margin-top:8px;opacity:.8}
+  #result{display:none;margin-top:12px;background:#fff;border-radius:16px;padding:14px;box-shadow:0 3px 10px rgba(120,80,150,.15)}
+  #result .stars{font-size:26px;color:#ffb400;letter-spacing:2px}
+  #result .score{font-size:30px;font-weight:bold;color:#ff7eb0}
+  #ghost{position:fixed;pointer-events:none;z-index:99;transform:translate(-50%,-50%);display:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
+</style>
+</head>
+<body>
+<h1>👗 Dress Up Studio</h1>
+<div id="theme"></div>
+<div id="app">
+  <div id="stageWrap">
+    <svg id="stage" viewBox="0 0 300 520" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff0f6"/><stop offset="1" stop-color="#ffd9ea"/>
+        </linearGradient>
+      </defs>
+      <rect width="300" height="520" fill="url(#wall)"/>
+      <rect y="470" width="300" height="50" fill="#f3c9dc"/>
+      <g fill="#fff" opacity=".7">
+        <circle cx="40" cy="60" r="5"/><circle cx="262" cy="110" r="4"/><circle cx="30" cy="220" r="3"/>
+        <circle cx="270" cy="300" r="5"/><circle cx="48" cy="360" r="4"/>
+      </g>
+      <ellipse cx="150" cy="498" rx="72" ry="9" fill="#c9a0b8" opacity=".35"/>
+      <g id="model"></g>
+      <g id="dressLayer"></g>
+    </svg>
+  </div>
+  <div id="side">
+    <div class="tabs" id="tabs"></div>
+    <div id="wardrobe"></div>
+    <div id="hint">Drag clothes onto the model. Drag them off the stage to take them off.</div>
+    <input id="key" type="password" placeholder="Optional: Anthropic API key for the AI judge">
+    <div class="row">
